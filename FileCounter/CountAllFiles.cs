@@ -3,7 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace FileCounter;
+namespace FileCounter.Cli;
+
 internal sealed class CountAllFiles : Command<CountAllFiles.Settings> {
     public sealed class Settings : CommandSettings {
         [Description("Path to search. Defaults to current directory.")]
@@ -13,6 +14,10 @@ internal sealed class CountAllFiles : Command<CountAllFiles.Settings> {
         [CommandOption("-p|--pattern")]
         public string? SearchPattern { get; init; }
 
+        [CommandOption("-r|--recurse")]
+        [DefaultValue(false)]
+        public bool RecurseSubdirectories { get; init; }
+
         [CommandOption("--hidden")]
         [DefaultValue(true)]
         public bool IncludeHidden { get; init; }
@@ -21,9 +26,9 @@ internal sealed class CountAllFiles : Command<CountAllFiles.Settings> {
     public override int Execute([NotNull] CommandContext context, [NotNull] Settings settings) {
         var searchOptions = new EnumerationOptions {
             AttributesToSkip = settings.IncludeHidden
-                ? FileAttributes.Hidden | FileAttributes.System
-                : FileAttributes.System,
-            RecurseSubdirectories = true
+                ? FileAttributes.System
+                : FileAttributes.Hidden | FileAttributes.System,
+            RecurseSubdirectories = settings.RecurseSubdirectories
         };
 
         var searchPattern = settings.SearchPattern ?? "*.*";
@@ -31,13 +36,17 @@ internal sealed class CountAllFiles : Command<CountAllFiles.Settings> {
         var files = new DirectoryInfo(searchPath)
             .GetFiles(searchPattern, searchOptions);
 
-        var totalFileSize = files
-            .Sum(fileInfo => fileInfo.Length) / 1024 / 1024;
+        var groupped = files.GroupBy(fileInfo => fileInfo.Extension)
+            .Select(group => new {
+                Extension = group.Key,
+                Count = group.Count()
+            })
+            .OrderByDescending(x => x.Count)
+            .ToList();
 
-        foreach( var file in files ) {
-            AnsiConsole.MarkupLine($"[green]{file.Name}[/]: [blue]{file.Length:N0}[/] bytes");
+        foreach (var group in groupped) {
+            AnsiConsole.MarkupLine($"[green]{group.Extension}[/]: {group.Count}");
         }
-        AnsiConsole.MarkupLine($"Total file size for [green]{searchPattern}[/] files in [green]{searchPath}[/]: [blue]{totalFileSize:N0}[/] MB");
 
         return 0;
     }
