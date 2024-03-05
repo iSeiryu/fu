@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace FileCounter.Cli;
+namespace FileInformation.Cli;
 internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
     public sealed class Settings : CommandSettings {
         [Description("Path to search. Defaults to current directory.")]
@@ -88,8 +88,8 @@ internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
 
         AnsiConsole.MarkupLine($"Total file size for [green]{searchPattern}[/] files in [green]{searchPath}[/]{includingHidden}{includingSubdirectories}");
         AnsiConsole.MarkupLine($"[blue]{totalFileSize:N0}[/] bytes");
-        AnsiConsole.MarkupLine($"[blue]{(totalFileSize / 1000m):F2}[/] KB");
-        AnsiConsole.MarkupLine($"[blue]{(totalFileSize / 1000m / 1000):F4}[/] MB");
+        AnsiConsole.MarkupLine($"[blue]{totalFileSize / 1000m:F2}[/] KB");
+        AnsiConsole.MarkupLine($"[blue]{totalFileSize / 1000m / 1000:F4}[/] MB");
     }
 
     static IEnumerable<FileInfo> Search(string searchPath, string searchPattern, Settings settings) {

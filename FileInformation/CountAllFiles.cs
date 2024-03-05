@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace FileCounter.Cli;
+namespace FileInformation.Cli;
 
 internal sealed class CountAllFiles : Command<CountAllFiles.Settings> {
     public sealed class Settings : CommandSettings {

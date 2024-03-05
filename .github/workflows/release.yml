@@ -1,0 +1,37 @@
+name: release
+
+on:
+    # Triggers the workflow on push or pull request events but only for the main branch
+    push:
+      branches: [ main ]
+    pull_request:
+      branches: [ main ]
+    # Allows you to run this workflow manually from the Actions tab
+    workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.x.x
+      
+    - name: Dotnet Installation Info
+      run: dotnet --info
+      
+    - name: Pack
+      run: dotnet pack -c Release /p:ContinuousIntegrationBuild=true /p:PublishWithoutAot=true
+      
+    # publish to nuget. This will publish both a nupkg and snupkg file.
+    - name: Publish
+      shell: pwsh
+      run: |
+        pwd
+        cd FileInformation/nupkg
+        ls
+        dotnet nuget push FileInformation.*.nupkg --api-key=${{ secrets.NUGET_TOKEN }} --source https://api.nuget.org/v3/index.json

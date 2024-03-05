@@ -6,7 +6,7 @@ A dotnet global tool to get data about the files and directories.
 cd /repo/folder
 
 dotnet build
-dotnet run --project .\FileCounter\FileCounter.Cli.csproj
+dotnet run --project .\FileInformation\FileInformation.Cli.csproj
 ```
 
 ### Publish AOT

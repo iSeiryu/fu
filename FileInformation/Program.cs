@@ -1,4 +1,4 @@
-﻿using FileCounter.Cli;
+﻿using FileInformation.Cli;
 using Spectre.Console.Cli;
 
 var app = new CommandApp();
