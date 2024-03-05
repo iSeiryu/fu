@@ -1,4 +1,4 @@
-File counter CLI utility.
+A dotnet global tool to get data about the files and directories.
 
 ### Build and Run
 
