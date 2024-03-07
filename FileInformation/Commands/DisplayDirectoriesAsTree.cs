@@ -10,6 +10,14 @@ internal sealed class DisplayDirectoriesAsTree : Command<DisplayDirectoriesAsTre
         [Description("Path to search. Defaults to current directory.")]
         [CommandArgument(0, "[searchPath]")]
         public string? SearchPath { get; init; }
+
+        [CommandOption("-d|--depth")]
+        [DefaultValue(3)]
+        public int Depth { get; init; }
+
+        [CommandOption("--hidden")]
+        [DefaultValue(false)]
+        public bool IncludeHidden { get; init; }
     }
 
     public override int Execute([NotNull] CommandContext context, [NotNull] Settings settings) {
@@ -29,20 +37,31 @@ internal sealed class DisplayDirectoriesAsTree : Command<DisplayDirectoriesAsTre
         var searchPath = PathService.BuildPath(settings.SearchPath);
 
         var searchOptions = new EnumerationOptions {
-            AttributesToSkip = FileAttributes.System,
+            AttributesToSkip = settings.IncludeHidden
+                ? FileAttributes.System
+                : FileAttributes.Hidden | FileAttributes.System
         };
 
         var root = new Tree(searchPath).Style("red");
-        var directories = new DirectoryInfo(searchPath).EnumerateDirectories("*", searchOptions);
-        foreach (var directory in directories) {
-            root.AddNode(directory.Name);
-        }
-
-        var files = new DirectoryInfo(searchPath).EnumerateFiles("*", searchOptions);
-        foreach (var file in files) {
-            root.AddNode($"[blue]{file.Name}[/]");
-        }
+        SearchRecursively(new DirectoryInfo(searchPath), root, settings.Depth);
 
         AnsiConsole.Write(root);
+
+        void SearchRecursively(DirectoryInfo directory, IHasTreeNodes tree, int depth) {
+            if (depth <= 0) {
+                return;
+            }
+
+            var subDirectories = directory.EnumerateDirectories("*", searchOptions);
+            foreach (var subDirectory in subDirectories) {
+                var node = tree.AddNode(subDirectory.Name);
+                SearchRecursively(subDirectory, node, depth - 1);
+            }
+
+            var subFiles = directory.EnumerateFiles("*", searchOptions);
+            foreach (var subFile in subFiles) {
+                tree.AddNode($"[blue]{subFile.Name}[/]");
+            }
+        }
     }
 }

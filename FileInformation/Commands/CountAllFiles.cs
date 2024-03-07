@@ -23,7 +23,7 @@ internal sealed class CountAllFiles : Command<CountAllFiles.Settings> {
         public int Head { get; init; }
 
         [CommandOption("--hidden")]
-        [DefaultValue(true)]
+        [DefaultValue(false)]
         public bool IncludeHidden { get; init; }
     }
 

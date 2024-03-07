@@ -54,6 +54,7 @@ fu size -h
 # Available commands
 fu count [searchPath] [OPTIONS]
 fu size [searchPath] [OPTIONS]
+fu tree [searchPath] [OPTIONS]
 ```
 Examples:
 ```bash
@@ -65,4 +66,7 @@ fu size
 
 # Count the size of all files in the current directory and its subdirectories and display the top 10 largest directories
 fu size -r --hidden --head 10
+
+# Display all direcotries and files in the current directory and its subdirectories
+fu tree -r --hidden
 ```
