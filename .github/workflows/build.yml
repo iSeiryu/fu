@@ -1,0 +1,30 @@
+name: build
+
+on:
+    # Triggers the workflow on push or pull request events but only for the main branch
+    push:
+      branches: [ main ]
+    pull_request:
+      branches: [ main ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.x.x
+    
+    - name: Dotnet Installation Info
+      run: dotnet --info
+    
+    - name: Pack
+      run: dotnet build -c Release
