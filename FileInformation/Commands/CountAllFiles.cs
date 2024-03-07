@@ -18,6 +18,10 @@ internal sealed class CountAllFiles : Command<CountAllFiles.Settings> {
         [DefaultValue(false)]
         public bool RecurseSubdirectories { get; init; }
 
+        [CommandOption("--head")]
+        [DefaultValue(0)]
+        public int Head { get; init; }
+
         [CommandOption("--hidden")]
         [DefaultValue(true)]
         public bool IncludeHidden { get; init; }
@@ -45,23 +49,23 @@ internal sealed class CountAllFiles : Command<CountAllFiles.Settings> {
         };
 
         var searchPattern = settings.SearchPattern ?? "*";
-        var searchPath = settings.SearchPath ?? Directory.GetCurrentDirectory();
-        if (searchPath.StartsWith("~/") || searchPath.StartsWith("~\\")) {
-            var homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + Path.DirectorySeparatorChar;
-            searchPath = searchPath.Replace("~/", homeFolder);
-            searchPath = searchPath.Replace("~\\", homeFolder);
-        }
+        var searchPath = PathService.BuildPath(settings.SearchPath);
         var files = new DirectoryInfo(searchPath).EnumerateFiles(searchPattern, searchOptions);
 
-        var groupped = files.GroupBy(fileInfo => fileInfo.Extension)
-            .Select(group => new {
-                Extension = group.Key,
-                Count = group.Count()
-            })
-            .OrderByDescending(x => x.Count);
+        var groupped = files
+            .GroupBy(fileInfo => fileInfo.Extension)
+            .Select(group => (Extension: group.Key, Count: group.Count()))
+            .OrderByDescending(x => x.Count)
+            .AsEnumerable();
+
+        if (settings.Head > 0) {
+            groupped = groupped.Take(settings.Head);
+        }
 
         foreach (var group in groupped) {
             AnsiConsole.MarkupLine($"[green]{group.Extension}[/]: {group.Count}");
         }
+
+        AnsiConsole.MarkupLine($"Total: [green]{groupped.Sum(x => x.Count)}[/]");
     }
 }

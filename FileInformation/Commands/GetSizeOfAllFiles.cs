@@ -104,12 +104,7 @@ internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
 
     static (string searchPattern, string searchPath) SanitizeInput(Settings settings) {
         var searchPattern = settings.SearchPattern ?? "*";
-        var searchPath = settings.SearchPath ?? Directory.GetCurrentDirectory();
-        if (searchPath.StartsWith("~/") || searchPath.StartsWith("~\\")) {
-            var homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + Path.DirectorySeparatorChar;
-            searchPath = searchPath.Replace("~/", homeFolder);
-            searchPath = searchPath.Replace("~\\", homeFolder);
-        }
+        var searchPath = PathService.BuildPath(settings.SearchPath);
 
         return (searchPattern, searchPath);
     }

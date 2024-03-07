@@ -26,12 +26,7 @@ internal sealed class DisplayDirectoriesAsTree : Command<DisplayDirectoriesAsTre
     }
 
     static void Search(Settings settings) {
-        var searchPath = settings.SearchPath ?? Directory.GetCurrentDirectory();
-        if (searchPath.StartsWith("~/") || searchPath.StartsWith("~\\")) {
-            var homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + Path.DirectorySeparatorChar;
-            searchPath = searchPath.Replace("~/", homeFolder);
-            searchPath = searchPath.Replace("~\\", homeFolder);
-        }
+        var searchPath = PathService.BuildPath(settings.SearchPath);
 
         var searchOptions = new EnumerationOptions {
             AttributesToSkip = FileAttributes.System,
