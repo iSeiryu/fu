@@ -1,11 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>0.0.2</Version>
+    <Version>0.0.3</Version>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <RollForward>LatestMajor</RollForward>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PublishAot Condition="'$(PublishWithoutAot)' != 'true'">true</PublishAot>
@@ -13,7 +11,7 @@
 
     <PackAsTool>true</PackAsTool>
     <PackageTags>console cli tool filesystem</PackageTags>
-    <ToolCommandName>fi</ToolCommandName>
+    <ToolCommandName>fu</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
     <PackageProjectUrl>https://github.com/iseiryu/FileInformation</PackageProjectUrl>
     <PackageReleaseNotes>https://github.com/iseiryu/FileInformation/blob/main/CHANGELOG.md</PackageReleaseNotes>
@@ -26,7 +24,7 @@
     <Authors>iSeiryu</Authors>
     <Company />
   </PropertyGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="Spectre.Console" Version="0.48.0" />
     <PackageReference Include="Spectre.Console.Cli" Version="0.48.0" />

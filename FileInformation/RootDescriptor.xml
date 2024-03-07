@@ -1,5 +1,5 @@
 <linker>
-    <assembly fullname="FileCounter.Cli" />
+    <assembly fullname="FileInformation.Cli" />
     <assembly fullname="Spectre.Console.Cli">
         <type fullname="Spectre.Console.Cli.ExplainCommand" />
         <type fullname="Spectre.Console.Cli.XmlDocCommand" />
