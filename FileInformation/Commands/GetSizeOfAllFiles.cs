@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace FileInformation.Cli;
+namespace FileInformation.Cli.Commands;
 internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
     public sealed class Settings : CommandSettings {
         [Description("Path to search. Defaults to current directory.")]
@@ -39,8 +39,6 @@ internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
                 AnsiConsole.MarkupLine($"Searching files in [green]{settings.SearchPath}[/]");
                 var (searchPattern, searchPath) = SanitizeInput(settings);
                 var files = Search(searchPath, searchPattern, settings);
-
-                AnsiConsole.MarkupLine($"Aggregating results");
                 var result = Aggregate(settings, files);
 
                 PrintResults(settings, result, searchPath, searchPattern);
