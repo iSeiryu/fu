@@ -24,6 +24,19 @@ internal sealed class CountAllFiles : Command<CountAllFiles.Settings> {
     }
 
     public override int Execute([NotNull] CommandContext context, [NotNull] Settings settings) {
+        AnsiConsole
+            .Status()
+            .Spinner(Spinner.Known.Clock)
+            .SpinnerStyle(Style.Parse("green"))
+            .Start("Working...", ctx => {
+                AnsiConsole.MarkupLine($"Searching files in [green]{settings.SearchPath}[/]");
+                Count(settings);
+            });
+
+        return 0;
+    }
+
+    static void Count(Settings settings) {
         var searchOptions = new EnumerationOptions {
             AttributesToSkip = settings.IncludeHidden
                 ? FileAttributes.System
@@ -31,23 +44,24 @@ internal sealed class CountAllFiles : Command<CountAllFiles.Settings> {
             RecurseSubdirectories = settings.RecurseSubdirectories
         };
 
-        var searchPattern = settings.SearchPattern ?? "*.*";
+        var searchPattern = settings.SearchPattern ?? "*";
         var searchPath = settings.SearchPath ?? Directory.GetCurrentDirectory();
-        var files = new DirectoryInfo(searchPath)
-            .GetFiles(searchPattern, searchOptions);
+        if (searchPath.StartsWith("~/") || searchPath.StartsWith("~\\")) {
+            var homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + Path.DirectorySeparatorChar;
+            searchPath = searchPath.Replace("~/", homeFolder);
+            searchPath = searchPath.Replace("~\\", homeFolder);
+        }
+        var files = new DirectoryInfo(searchPath).EnumerateFiles(searchPattern, searchOptions);
 
         var groupped = files.GroupBy(fileInfo => fileInfo.Extension)
             .Select(group => new {
                 Extension = group.Key,
                 Count = group.Count()
             })
-            .OrderByDescending(x => x.Count)
-            .ToList();
+            .OrderByDescending(x => x.Count);
 
         foreach (var group in groupped) {
             AnsiConsole.MarkupLine($"[green]{group.Extension}[/]: {group.Count}");
         }
-
-        return 0;
     }
 }

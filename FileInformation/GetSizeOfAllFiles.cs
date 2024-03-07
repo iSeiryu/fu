@@ -37,23 +37,30 @@ internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
             .SpinnerStyle(Style.Parse("green"))
             .Start("Working...", ctx => {
                 AnsiConsole.MarkupLine($"Searching files in [green]{settings.SearchPath}[/]");
-                Search(settings);
+                var (searchPattern, searchPath) = SanitizeInput(settings);
+                var files = Search(searchPath, searchPattern, settings);
+
+                AnsiConsole.MarkupLine($"Aggregating results");
+                var result = Aggregate(settings, files);
+
+                PrintResults(settings, result, searchPath, searchPattern);
             });
 
         return 1;
     }
 
-    static void Search(Settings settings) {
-        var searchPattern = settings.SearchPattern ?? "*";
-        var searchPath = settings.SearchPath ?? Directory.GetCurrentDirectory();
-        if (searchPath.StartsWith("~/") || searchPath.StartsWith("~\\")) {
-            var homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + Path.DirectorySeparatorChar;
-            searchPath = searchPath.Replace("~/", homeFolder);
-            searchPath = searchPath.Replace("~\\", homeFolder);
-        }
+    static IEnumerable<FileInfo> Search(string searchPath, string searchPattern, Settings settings) {
+        var searchOptions = new EnumerationOptions {
+            AttributesToSkip = settings.IncludeHidden
+                ? FileAttributes.System
+                : FileAttributes.Hidden | FileAttributes.System,
+            RecurseSubdirectories = settings.RecurseSubdirectories
+        };
 
-        var files = Search(searchPath, searchPattern, settings);
-        var totalFileSize = files.Sum(fileInfo => fileInfo.Length);
+        return new DirectoryInfo(searchPath).EnumerateFiles(searchPattern, searchOptions);
+    }
+
+    static List<KeyValuePair<string, long>> Aggregate(Settings settings, IEnumerable<FileInfo> files) {
         var groupped = files.Aggregate(
                     new Dictionary<string, long>(),
                                 (acc, fileInfo) => {
@@ -79,8 +86,13 @@ internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
                 result.AddRange(groupped.TakeLast(settings.Tail));
         }
 
+        return result;
+    }
+
+    static void PrintResults(Settings settings, IEnumerable<KeyValuePair<string, long>> result, string searchPath, string searchPattern) {
         var includingHidden = settings.IncludeHidden ? ", including hidden" : "";
         var includingSubdirectories = settings.RecurseSubdirectories ? ", including subdirectories" : "";
+        var totalFileSize = result.Sum(x => x.Value);
 
         foreach (var (key, value) in result) {
             AnsiConsole.MarkupLine($"[blue]{value:N0}[/]\t[green]{key}[/]");
@@ -92,15 +104,15 @@ internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
         AnsiConsole.MarkupLine($"[blue]{totalFileSize / 1000m / 1000:F4}[/] MB");
     }
 
-    static IEnumerable<FileInfo> Search(string searchPath, string searchPattern, Settings settings) {
-        var searchOptions = new EnumerationOptions {
-            AttributesToSkip = settings.IncludeHidden
-                ? FileAttributes.System
-                : FileAttributes.Hidden | FileAttributes.System,
-            RecurseSubdirectories = settings.RecurseSubdirectories
-        };
+    static (string searchPattern, string searchPath) SanitizeInput(Settings settings) {
+        var searchPattern = settings.SearchPattern ?? "*";
+        var searchPath = settings.SearchPath ?? Directory.GetCurrentDirectory();
+        if (searchPath.StartsWith("~/") || searchPath.StartsWith("~\\")) {
+            var homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + Path.DirectorySeparatorChar;
+            searchPath = searchPath.Replace("~/", homeFolder);
+            searchPath = searchPath.Replace("~\\", homeFolder);
+        }
 
-        var files = new DirectoryInfo(searchPath).EnumerateFiles(searchPattern, searchOptions);
-        return files;
+        return (searchPattern, searchPath);
     }
 }

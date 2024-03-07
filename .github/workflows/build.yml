@@ -26,5 +26,5 @@ jobs:
     - name: Dotnet Installation Info
       run: dotnet --info
     
-    - name: Pack
+    - name: Build
       run: dotnet build -c Release
