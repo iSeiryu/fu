@@ -44,7 +44,7 @@ internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
                 PrintResults(settings, result, searchPath, searchPattern);
             });
 
-        return 1;
+        return 0;
     }
 
     static IEnumerable<FileInfo> Search(string searchPath, string searchPattern, Settings settings) {

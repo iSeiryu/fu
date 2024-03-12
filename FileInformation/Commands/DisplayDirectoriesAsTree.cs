@@ -30,7 +30,7 @@ internal sealed class DisplayDirectoriesAsTree : Command<DisplayDirectoriesAsTre
                 Search(settings);
             });
 
-        return 1;
+        return 0;
     }
 
     static void Search(Settings settings) {
@@ -60,7 +60,12 @@ internal sealed class DisplayDirectoriesAsTree : Command<DisplayDirectoriesAsTre
 
             var subFiles = directory.EnumerateFiles("*", searchOptions);
             foreach (var subFile in subFiles) {
-                tree.AddNode($"[blue]{subFile.Name}[/]");
+                var curr = subFile.Name;
+
+                if (subFile.Name.Contains('['))
+                    curr = subFile.Name.EscapeMarkup();
+
+                tree.AddNode($"[blue]{curr}[/]");
             }
         }
     }

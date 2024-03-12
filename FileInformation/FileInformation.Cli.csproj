@@ -24,6 +24,12 @@
     <Authors>iSeiryu</Authors>
     <Company />
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="images\**" />
+    <EmbeddedResource Remove="images\**" />
+    <None Remove="images\**" />
+  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="Spectre.Console" Version="0.48.0" />
@@ -37,7 +43,10 @@
   <ItemGroup>
     <!-- Include README here so it shows up in the nuget.org page -->
     <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="\" />
-    <None Include="images\rage.jpg" Link="rage.jpg" Pack="true" PackagePath="\images" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="FileInformation.Cli.Tests" />
   </ItemGroup>
 
 </Project>

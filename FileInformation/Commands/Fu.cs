@@ -52,6 +52,6 @@ internal sealed class Fu : Command<Fu.Settings> {
 
         AnsiConsole.Write(face);
 
-        return 1;
+        return 0;
     }
 }
