@@ -39,9 +39,9 @@ internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
                 AnsiConsole.MarkupLine($"Searching files in [green]{settings.SearchPath}[/]");
                 var (searchPattern, searchPath) = SanitizeInput(settings);
                 var files = Search(searchPath, searchPattern, settings);
-                var result = Aggregate(settings, files);
+                var (result, totalFileSize) = Aggregate(settings, files);
 
-                PrintResults(settings, result, searchPath, searchPattern);
+                PrintResults(settings, result, totalFileSize, searchPath, searchPattern);
             });
 
         return 0;
@@ -49,16 +49,18 @@ internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
 
     static IEnumerable<FileInfo> Search(string searchPath, string searchPattern, Settings settings) {
         var searchOptions = new EnumerationOptions {
-            AttributesToSkip = settings.IncludeHidden
-                ? FileAttributes.System
-                : FileAttributes.Hidden | FileAttributes.System,
+            AttributesToSkip = FileAttributes.System | FileAttributes.ReparsePoint,
             RecurseSubdirectories = settings.RecurseSubdirectories
         };
+
+        if (!settings.IncludeHidden) {
+            searchOptions.AttributesToSkip |= FileAttributes.Hidden;
+        }
 
         return new DirectoryInfo(searchPath).EnumerateFiles(searchPattern, searchOptions);
     }
 
-    static List<KeyValuePair<string, long>> Aggregate(Settings settings, IEnumerable<FileInfo> files) {
+    static (List<KeyValuePair<string, long>>, long) Aggregate(Settings settings, IEnumerable<FileInfo> files) {
         var groupped = files.Aggregate(
                     new Dictionary<string, long>(),
                                 (acc, fileInfo) => {
@@ -75,6 +77,8 @@ internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
                             .OrderByDescending(x => x.Value);
 
         var result = groupped.ToList();
+        var totalFileSize = result.Sum(x => x.Value);
+
         if (settings.Head > 0 || settings.Tail > 0) {
             result = [];
 
@@ -84,13 +88,12 @@ internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
                 result.AddRange(groupped.TakeLast(settings.Tail));
         }
 
-        return result;
+        return (result, totalFileSize);
     }
 
-    static void PrintResults(Settings settings, IEnumerable<KeyValuePair<string, long>> result, string searchPath, string searchPattern) {
+    static void PrintResults(Settings settings, IEnumerable<KeyValuePair<string, long>> result, long totalFileSize, string searchPath, string searchPattern) {
         var includingHidden = settings.IncludeHidden ? ", including hidden" : "";
         var includingSubdirectories = settings.RecurseSubdirectories ? ", including subdirectories" : "";
-        var totalFileSize = result.Sum(x => x.Value);
 
         foreach (var (key, value) in result) {
             AnsiConsole.MarkupLine($"[blue]{value:N0}[/]\t[green]{key}[/]");
@@ -99,7 +102,7 @@ internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
         AnsiConsole.MarkupLine($"Total file size for [green]{searchPattern}[/] files in [green]{searchPath}[/]{includingHidden}{includingSubdirectories}");
         AnsiConsole.MarkupLine($"[blue]{totalFileSize:N0}[/] bytes");
         AnsiConsole.MarkupLine($"[blue]{totalFileSize / 1000m:F2}[/] KB");
-        AnsiConsole.MarkupLine($"[blue]{totalFileSize / 1000m / 1000:F4}[/] MB");
+        AnsiConsole.MarkupLine($"[blue]{totalFileSize / 1000m / 1000:F2}[/] MB");
     }
 
     static (string searchPattern, string searchPath) SanitizeInput(Settings settings) {

@@ -42,11 +42,13 @@ internal sealed class CountAllFiles : Command<CountAllFiles.Settings> {
 
     static void Count(Settings settings) {
         var searchOptions = new EnumerationOptions {
-            AttributesToSkip = settings.IncludeHidden
-                ? FileAttributes.System
-                : FileAttributes.Hidden | FileAttributes.System,
+            AttributesToSkip = FileAttributes.System | FileAttributes.ReparsePoint,
             RecurseSubdirectories = settings.RecurseSubdirectories
         };
+
+        if (!settings.IncludeHidden) {
+            searchOptions.AttributesToSkip |= FileAttributes.Hidden;
+        }
 
         var searchPattern = settings.SearchPattern ?? "*";
         var searchPath = PathService.BuildPath(settings.SearchPath);
@@ -56,16 +58,17 @@ internal sealed class CountAllFiles : Command<CountAllFiles.Settings> {
             .GroupBy(fileInfo => fileInfo.Extension)
             .Select(group => (Extension: group.Key, Count: group.Count()))
             .OrderByDescending(x => x.Count)
-            .AsEnumerable();
+            .ToList();
 
+        var totalCount = groupped.Sum(x => x.Count);
         if (settings.Head > 0) {
-            groupped = groupped.Take(settings.Head);
+            groupped = groupped.Take(settings.Head).ToList();
         }
 
         foreach (var group in groupped) {
             AnsiConsole.MarkupLine($"[green]{group.Extension}[/]: {group.Count}");
         }
 
-        AnsiConsole.MarkupLine($"Total: [green]{groupped.Sum(x => x.Count)}[/]");
+        AnsiConsole.MarkupLine($"Total: [green]{totalCount}[/]");
     }
 }
