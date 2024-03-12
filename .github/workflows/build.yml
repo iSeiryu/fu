@@ -30,12 +30,12 @@ jobs:
       run: dotnet build -c Release
     
     - name: Test
-      run: dotnet test --no-build --logger trx --results-directory "TestResults"
+      run: dotnet test --no-build --logger trx --results-directory "TestResults-${{ matrix.platform }}"
 
     - name: Upload dotnet test results
       uses: actions/upload-artifact@v4
       with:
-        name: dotnet--test-results
-        path: TestResults
+        name: dotnet-test-results-${{ matrix.platform }}
+        path: TestResults-${{ matrix.platform }}
       # Use always() to always run this step to publish test results when there are test failures
       if: ${{ always() }}
