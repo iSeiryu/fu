@@ -27,7 +27,7 @@ jobs:
       run: dotnet --info
     
     - name: Build
-      run: dotnet build -c Release
+      run: dotnet build
     
     - name: Test
       run: dotnet test --no-build --logger trx --results-directory "TestResults-${{ matrix.platform }}"
