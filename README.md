@@ -1,7 +1,28 @@
 # Overview
 
-A CLI tool to get different types of information about the files and directories.
+`fu` is a CLI tool to get different types of information about the files and directories and get is as fast as possible.
 It's in an experimental stage, so things might not work as expected and the API may change with each minor version upgrade.
+
+Capabilities:
+- Count the number of files and directories in a given directory
+- Get the size of a directory and its subdirectories
+    - Find the largest directories
+- Count the number of files groupped by extension
+    - Count code files only
+- Count lines in a file(s)
+- Display a tree of directories and files in a given directory
+
+# Motivation
+
+In the past few months I often needed to get different info about my file systems (Linux, Win, and sometimes OSX). `du`, `df`, `ls`, `wc`, `find` work well but have issues:
+- too slow on large volumes.
+- don't group/order things the way I needed - even via grep and sort.
+- limited functionality.
+- not cross-platform.
+
+The alternatives:
+- du - too slow and not cross-platform; not the output I needed which made me to pipe it to several other commands.
+- [fd](https://github.com/sharkdp/fd) - fast, cross-platform, but is very limited on the info it can extract.
 
 ### Build and Run
 
@@ -34,6 +55,12 @@ Make sure you follow any additional directions printed to the screen. You may ne
 #### On Windows
 ```bash
 dotnet tool install --global fileinformation.cli
+```
+
+For PowerShell, the following command will enable UTF8 and Emoji support. You can add this to your `profile.ps1` file:
+
+```pwsh
+[console]::InputEncoding = [console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
 ```
 
 #### On Mac
