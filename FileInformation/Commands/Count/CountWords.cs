@@ -9,7 +9,7 @@ internal sealed class CountWords : Command<CountWords.Settings> {
     public override int Execute([NotNull] CommandContext context, [NotNull] Settings settings) {
         AnsiConsole
             .Status()
-            .Spinner(Spinner.Known.Clock)
+            .Spinner(FuSettings.Spinner)
             .SpinnerStyle(Style.Parse("green"))
             .Start("Working...", ctx => {
                 AnsiConsole.MarkupLine($"Searching files in [green]{settings.FormattedSearchPath}[/]");
