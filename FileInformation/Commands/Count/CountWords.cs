@@ -1,10 +1,13 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
 namespace FileInformation.Cli.Commands.Count;
 internal sealed class CountWords : Command<CountWords.Settings> {
-    public sealed class Settings : CountCommandSettings { }
+    public sealed class Settings : CountCommandSettings { 
+    
+    }
 
     public override int Execute([NotNull] CommandContext context, [NotNull] Settings settings) {
         AnsiConsole
@@ -31,11 +34,13 @@ internal sealed class CountWords : Command<CountWords.Settings> {
 
         var searchPattern = settings.SearchPattern ?? "*";
         var files = new DirectoryInfo(settings.FormattedSearchPath).EnumerateFiles(searchPattern, searchOptions);
+        char[] separators = [' ', '\t', ':', ';', '.', ','];
 
         var groupped = files
             .SelectMany(fileInfo => File.ReadLines(fileInfo.FullName))
-            .SelectMany(line => line.Split(' ', StringSplitOptions.RemoveEmptyEntries))
-            .GroupBy(word => word)
+            .SelectMany(line => line.Split(separators, StringSplitOptions.RemoveEmptyEntries))
+            .Select(word => Regex.Replace(word, @"[^\w]", ""))
+            .GroupBy(word => word.ToLowerInvariant())
             .Select(group => (Word: group.Key, Count: group.Count()))
             .OrderByDescending(x => x.Count)
             .ToList();
