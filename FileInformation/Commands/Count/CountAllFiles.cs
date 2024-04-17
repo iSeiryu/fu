@@ -1,31 +1,11 @@
-﻿using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace FileInformation.Cli.Commands;
+namespace FileInformation.Cli.Commands.Count;
 
 internal sealed class CountAllFiles : Command<CountAllFiles.Settings> {
-    public sealed class Settings : CommandSettings {
-        [Description("Path to search. Defaults to current directory.")]
-        [CommandArgument(0, "[searchPath]")]
-        public string? SearchPath { get; init; }
-
-        [CommandOption("-p|--pattern")]
-        public string? SearchPattern { get; init; }
-
-        [CommandOption("-r|--recurse")]
-        [DefaultValue(false)]
-        public bool RecurseSubdirectories { get; init; }
-
-        [CommandOption("--head")]
-        [DefaultValue(0)]
-        public int Head { get; init; }
-
-        [CommandOption("--hidden")]
-        [DefaultValue(false)]
-        public bool IncludeHidden { get; init; }
-    }
+    public sealed class Settings : CountCommandSettings { }
 
     public override int Execute([NotNull] CommandContext context, [NotNull] Settings settings) {
         AnsiConsole

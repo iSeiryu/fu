@@ -1,4 +1,4 @@
-﻿using FileInformation.Cli.Commands;
+﻿using FileInformation.Cli.Commands.Count;
 using FluentAssertions;
 using Spectre.Console.Testing;
 
