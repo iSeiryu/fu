@@ -96,4 +96,7 @@ fu size -r --hidden --head 10
 
 # Display all direcotries and files in the current directory and its subdirectories
 fu tree -r --hidden
+
+# Count bad words in files (pwsh)
+curl https://www.cs.cmu.edu/~biglou/resources/bad-words.txt | & { fu count words . $input -r --hidden }
 ```
