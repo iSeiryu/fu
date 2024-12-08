@@ -63,20 +63,21 @@ internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
     static (List<KeyValuePair<string, long>>, long) Aggregate(Settings settings, IEnumerable<FileInfo> files) {
         var groupped = files.Aggregate(
                     new Dictionary<string, long>(),
-                                (acc, fileInfo) => {
-                                    var path = fileInfo.DirectoryName;
-                                    if (acc.ContainsKey(path!)) {
-                                        acc[path!] += fileInfo.Length;
-                                    }
-                                    else {
-                                        acc[path!] = fileInfo.Length;
-                                    }
+                    (acc, fileInfo) => {
+                        var path = fileInfo.DirectoryName;
+                        if (acc.ContainsKey(path!)) {
+                            acc[path!] += fileInfo.Length;
+                        }
+                        else {
+                            acc[path!] = fileInfo.Length;
+                        }
 
-                                    return acc;
-                                })
-                            .OrderByDescending(x => x.Value);
+                        return acc;
+                    })
+                .OrderByDescending(x => x.Value)
+                .ToList();
 
-        var result = groupped.ToList();
+        var result = groupped;
         var totalFileSize = result.Sum(x => x.Value);
 
         if (settings.Head > 0 || settings.Tail > 0) {
@@ -100,9 +101,8 @@ internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
         }
 
         AnsiConsole.MarkupLine($"Total file size for [green]{searchPattern}[/] files in [green]{searchPath}[/]{includingHidden}{includingSubdirectories}");
-        AnsiConsole.MarkupLine($"[blue]{totalFileSize:N0}[/] bytes");
-        AnsiConsole.MarkupLine($"[blue]{totalFileSize / 1000m:F2}[/] KB");
-        AnsiConsole.MarkupLine($"[blue]{totalFileSize / 1000m / 1000:F2}[/] MB");
+        AnsiConsole.MarkupLine($"{totalFileSize:N0} bytes");
+        AnsiConsole.MarkupLine($"{ConvertToReadableSize(totalFileSize)}");
     }
 
     static (string searchPattern, string searchPath) SanitizeInput(Settings settings) {
@@ -110,5 +110,21 @@ internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
         var searchPath = PathService.BuildPath(settings.SearchPath);
 
         return (searchPattern, searchPath);
+    }
+
+    static string ConvertToReadableSize(long bytes) {
+        const long kiloByte = 1000;
+        const long megaByte = kiloByte * 1000;
+        const long gigaByte = megaByte * 1000;
+
+        if (bytes >= gigaByte) {
+            return $"{(double)bytes / gigaByte:F2} GB";
+        } else if (bytes >= megaByte) {
+            return $"{(double)bytes / megaByte:F2} MB";
+        } else if (bytes >= kiloByte) {
+            return $"{(double)bytes / kiloByte:F2} KB";
+        } else {
+            return $"{bytes} Bytes";
+        }
     }
 }
