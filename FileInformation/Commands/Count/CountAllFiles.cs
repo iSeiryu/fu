@@ -34,18 +34,18 @@ internal sealed class CountAllFiles : Command<CountAllFiles.Settings> {
         var searchPath = PathService.BuildPath(settings.SearchPath);
         var files = new DirectoryInfo(searchPath).EnumerateFiles(searchPattern, searchOptions);
 
-        var groupped = files
+        var grouped = files
             .GroupBy(fileInfo => fileInfo.Extension)
             .Select(group => (Extension: group.Key, Count: group.Count()))
             .OrderByDescending(x => x.Count)
             .ToList();
 
-        var totalCount = groupped.Sum(x => x.Count);
+        var totalCount = grouped.Sum(x => x.Count);
         if (settings.Head > 0) {
-            groupped = groupped.Take(settings.Head).ToList();
+            grouped = grouped.Take(settings.Head).ToList();
         }
 
-        foreach (var group in groupped) {
+        foreach (var group in grouped) {
             AnsiConsole.MarkupLine($"[green]{group.Extension}[/]: {group.Count}");
         }
 

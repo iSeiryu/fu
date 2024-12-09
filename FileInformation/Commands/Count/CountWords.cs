@@ -56,7 +56,7 @@ internal sealed class CountWords : Command<CountWords.Settings> {
     }
 
     void Search(IEnumerable<FileInfo> files, string[] filter, Settings settings) {
-        var groupped = files
+        var grouped = files
             .AsParallel()
             .SelectMany(fileInfo => File.ReadLines(fileInfo.FullName))
             .SelectMany(line => line.Split(_separators, StringSplitOptions.RemoveEmptyEntries))
@@ -67,13 +67,13 @@ internal sealed class CountWords : Command<CountWords.Settings> {
             .OrderByDescending(x => x.Count)
             .ToList();
 
-        var totalCount = groupped.Sum(x => x.Count);
+        var totalCount = grouped.Sum(x => x.Count);
 
         if (settings.Head > 0) {
-            groupped = groupped.Take(settings.Head).ToList();
+            grouped = grouped.Take(settings.Head).ToList();
         }
 
-        foreach (var word in groupped) {
+        foreach (var word in grouped) {
             AnsiConsole.MarkupLine($"[green]{word.Word}[/]: {word.Count}");
         }
 
@@ -81,7 +81,7 @@ internal sealed class CountWords : Command<CountWords.Settings> {
     }
 
     void SearchAndGroupByFile(IEnumerable<FileInfo> files, string[] filter, Settings settings) {
-        var groupped = files
+        var grouped = files
             .AsParallel()
             .Select(fileInfo => (
                 fileName: fileInfo.FullName,
@@ -99,13 +99,13 @@ internal sealed class CountWords : Command<CountWords.Settings> {
             .OrderByDescending(x => x.count)
             .ToList();
 
-        var totalCount = groupped.Sum(x => x.words.Sum(y => y.Count));
+        var totalCount = grouped.Sum(x => x.words.Sum(y => y.Count));
 
         if (settings.Head > 0) {
-            groupped = groupped.Take(settings.Head).ToList();
+            grouped = grouped.Take(settings.Head).ToList();
         }
 
-        foreach (var (fileName, words, count) in groupped) {
+        foreach (var (fileName, words, count) in grouped) {
             AnsiConsole.MarkupLine($"[green]{count}[/]: {fileName.EscapeMarkup()}");
 
             foreach (var word in words) {

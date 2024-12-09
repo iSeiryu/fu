@@ -7,7 +7,7 @@ Capabilities:
 - Count the number of files and directories in a given directory
 - Get the size of a directory and its subdirectories
     - Find the largest directories
-- Count the number of files groupped by extension
+- Count the number of files grouped by extension
     - Count code files only
 - Count lines in a file(s)
 - Display a tree of directories and files in a given directory

@@ -61,7 +61,7 @@ internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
     }
 
     static (List<KeyValuePair<string, long>>, long) Aggregate(Settings settings, IEnumerable<FileInfo> files) {
-        var groupped = files.Aggregate(
+        var grouped = files.Aggregate(
                     new Dictionary<string, long>(),
                     (acc, fileInfo) => {
                         var path = fileInfo.DirectoryName;
@@ -77,16 +77,16 @@ internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
                 .OrderByDescending(x => x.Value)
                 .ToList();
 
-        var result = groupped;
+        var result = grouped;
         var totalFileSize = result.Sum(x => x.Value);
 
         if (settings.Head > 0 || settings.Tail > 0) {
             result = [];
 
             if (settings.Head > 0)
-                result.AddRange(groupped.Take(settings.Head));
+                result.AddRange(grouped.Take(settings.Head));
             if (settings.Tail > 0)
-                result.AddRange(groupped.TakeLast(settings.Tail));
+                result.AddRange(grouped.TakeLast(settings.Tail));
         }
 
         return (result, totalFileSize);
