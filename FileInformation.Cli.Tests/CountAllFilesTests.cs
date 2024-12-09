@@ -18,4 +18,19 @@ public class CountAllFilesTests {
         settings.RecurseSubdirectories.Should().BeFalse();
         settings.IncludeHidden.Should().BeFalse();
     }
+    
+    [Fact]
+    public void CountWords_without_agrs_runs_successfully() {
+        var commandTester = new CommandAppTester();
+        commandTester.SetDefaultCommand<CountWords>();
+        var result = commandTester.Run();
+        var settings = result.Settings.As<CountWords.Settings>();
+
+        result.ExitCode.Should().Be(0);
+        settings.SearchPath.Should().Be(null);
+        settings.SearchPattern.Should().Be(null);
+        settings.Head.Should().Be(0);
+        settings.RecurseSubdirectories.Should().BeFalse();
+        settings.IncludeHidden.Should().BeFalse();
+    }
 }
