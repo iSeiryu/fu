@@ -54,7 +54,12 @@ internal sealed class DisplayDirectoriesAsTree : Command<DisplayDirectoriesAsTre
 
             var subDirectories = directory.EnumerateDirectories("*", searchOptions);
             foreach (var subDirectory in subDirectories) {
-                var node = tree.AddNode(subDirectory.Name);
+                var curr = subDirectory.Name;
+                
+                if (curr.Contains('['))
+                    curr = curr.EscapeMarkup();
+                
+                var node = tree.AddNode(curr);
                 SearchRecursively(subDirectory, node, depth - 1);
             }
 
@@ -62,8 +67,8 @@ internal sealed class DisplayDirectoriesAsTree : Command<DisplayDirectoriesAsTre
             foreach (var subFile in subFiles) {
                 var curr = subFile.Name;
 
-                if (subFile.Name.Contains('['))
-                    curr = subFile.Name.EscapeMarkup();
+                if (curr.Contains('['))
+                    curr = curr.EscapeMarkup();
 
                 tree.AddNode($"[blue]{curr}[/]");
             }
