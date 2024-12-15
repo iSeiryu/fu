@@ -7,7 +7,7 @@ internal class CountCommandSettings : CommandSettings, IRecurseCommand {
     [Description("Path to search. Defaults to current directory.")]
     [CommandArgument(0, "[searchPath]")]
     public string? SearchPath { get; init; }
-    public string FormattedSearchPath => PathService.BuildPath(SearchPath);
+    public string FormattedSearchPath => PathHelper.BuildPath(SearchPath);
 
     [CommandOption("-p|--pattern")]
     public string? SearchPattern { get; init; }

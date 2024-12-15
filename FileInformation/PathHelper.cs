@@ -1,6 +1,6 @@
 ﻿namespace FileInformation.Cli;
 
-internal static class PathService {
+internal static class PathHelper {
     public static string BuildPath(string? path) {
         var searchPath = path ?? Directory.GetCurrentDirectory();
         if (searchPath.StartsWith("~/") || searchPath.StartsWith("~\\")) {

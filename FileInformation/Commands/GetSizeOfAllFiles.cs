@@ -4,14 +4,14 @@ using Spectre.Console;
 using Spectre.Console.Cli;
 
 namespace FileInformation.Cli.Commands;
+
 internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
     public sealed class Settings : CommandSettings {
         [Description("Path to search. Defaults to current directory.")]
         [CommandArgument(0, "[searchPath]")]
         public string? SearchPath { get; init; }
 
-        [CommandOption("-p|--pattern")]
-        public string? SearchPattern { get; init; }
+        [CommandOption("-p|--pattern")] public string? SearchPattern { get; init; }
 
         [CommandOption("--head")]
         [DefaultValue(0)]
@@ -38,7 +38,8 @@ internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
             .Start("Working...", ctx => {
                 AnsiConsole.MarkupLine($"Searching files in [green]{settings.SearchPath}[/]");
                 var (searchPattern, searchPath) = SanitizeInput(settings);
-                var files = Search(searchPath, searchPattern, settings);
+                var files = FileSearcher.Search(searchPath, searchPattern, settings.IncludeHidden,
+                    settings.RecurseSubdirectories);
                 var (result, totalFileSize) = Aggregate(settings, files);
 
                 PrintResults(settings, result, totalFileSize, searchPath, searchPattern);
@@ -47,35 +48,27 @@ internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
         return 0;
     }
 
-    static IEnumerable<FileInfo> Search(string searchPath, string searchPattern, Settings settings) {
-        var searchOptions = new EnumerationOptions {
-            AttributesToSkip = FileAttributes.System | FileAttributes.ReparsePoint,
-            RecurseSubdirectories = settings.RecurseSubdirectories
-        };
-
-        if (!settings.IncludeHidden) {
-            searchOptions.AttributesToSkip |= FileAttributes.Hidden;
-        }
-
-        return new DirectoryInfo(searchPath).EnumerateFiles(searchPattern, searchOptions);
-    }
-
     static (List<KeyValuePair<string, long>>, long) Aggregate(Settings settings, IEnumerable<FileInfo> files) {
         var grouped = files.Aggregate(
-                    new Dictionary<string, long>(),
-                    (acc, fileInfo) => {
-                        var path = fileInfo.DirectoryName;
-                        if (acc.ContainsKey(path!)) {
-                            acc[path!] += fileInfo.Length;
-                        }
-                        else {
-                            acc[path!] = fileInfo.Length;
-                        }
+                new Dictionary<string, long>(),
+                (acc, fileInfo) => {
+                    var path = fileInfo.DirectoryName!;
 
+                    if (fileInfo.Attributes == (FileAttributes)(-1)) {
                         return acc;
-                    })
-                .OrderByDescending(x => x.Value)
-                .ToList();
+                    }
+
+                    if (acc.ContainsKey(path)) {
+                        acc[path] += fileInfo.Length;
+                    }
+                    else {
+                        acc[path] = fileInfo.Length;
+                    }
+
+                    return acc;
+                })
+            .OrderByDescending(x => x.Value)
+            .ToList();
 
         var result = grouped;
         var totalFileSize = result.Sum(x => x.Value);
@@ -92,22 +85,23 @@ internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
         return (result, totalFileSize);
     }
 
-    static void PrintResults(Settings settings, IEnumerable<KeyValuePair<string, long>> result, long totalFileSize, string searchPath, string searchPattern) {
+    static void PrintResults(Settings settings, IEnumerable<KeyValuePair<string, long>> result, long totalFileSize,
+        string searchPath, string searchPattern) {
         var includingHidden = settings.IncludeHidden ? ", including hidden" : "";
         var includingSubdirectories = settings.RecurseSubdirectories ? ", including subdirectories" : "";
 
         foreach (var (key, value) in result) {
-            AnsiConsole.MarkupLine($"[blue]{value:N0}[/]\t[green]{key}[/]");
+            AnsiConsole.WriteLine($"{value:N0}\t{key}");
         }
 
-        AnsiConsole.MarkupLine($"Total file size for [green]{searchPattern}[/] files in [green]{searchPath}[/]{includingHidden}{includingSubdirectories}");
-        AnsiConsole.MarkupLine($"{totalFileSize:N0} bytes");
-        AnsiConsole.MarkupLine($"{ConvertToReadableSize(totalFileSize)}");
+        AnsiConsole.MarkupLine(
+            $"Total file size for [green]{searchPattern}[/] files in [green]{searchPath}[/]{includingHidden}{includingSubdirectories}");
+        AnsiConsole.WriteLine($"{ConvertToReadableSize(totalFileSize)}");
     }
 
     static (string searchPattern, string searchPath) SanitizeInput(Settings settings) {
         var searchPattern = settings.SearchPattern ?? "*";
-        var searchPath = PathService.BuildPath(settings.SearchPath);
+        var searchPath = PathHelper.BuildPath(settings.SearchPath);
 
         return (searchPattern, searchPath);
     }
@@ -117,14 +111,11 @@ internal sealed class GetSizeOfAllFiles : Command<GetSizeOfAllFiles.Settings> {
         const long megaByte = kiloByte * 1000;
         const long gigaByte = megaByte * 1000;
 
-        if (bytes >= gigaByte) {
-            return $"{(double)bytes / gigaByte:F2} GB";
-        } else if (bytes >= megaByte) {
-            return $"{(double)bytes / megaByte:F2} MB";
-        } else if (bytes >= kiloByte) {
-            return $"{(double)bytes / kiloByte:F2} KB";
-        } else {
-            return $"{bytes} Bytes";
-        }
+        return bytes switch {
+            >= gigaByte => $"{(double)bytes / gigaByte:F2} GB",
+            >= megaByte => $"{(double)bytes / megaByte:F2} MB",
+            >= kiloByte => $"{(double)bytes / kiloByte:F2} KB",
+            _ => $"{bytes} bytes"
+        };
     }
 }

@@ -23,4 +23,5 @@ app.Configure(config => {
     config.Settings.ApplicationName = "fu";
 });
 
+//return app.Run(["size", "/", "--hidden", "-r", "-p", "*.png"]);
 return app.Run(args);

@@ -21,18 +21,10 @@ internal sealed class CountAllFiles : Command<CountAllFiles.Settings> {
     }
 
     static void Count(Settings settings) {
-        var searchOptions = new EnumerationOptions {
-            AttributesToSkip = FileAttributes.System | FileAttributes.ReparsePoint,
-            RecurseSubdirectories = settings.RecurseSubdirectories
-        };
-
-        if (!settings.IncludeHidden) {
-            searchOptions.AttributesToSkip |= FileAttributes.Hidden;
-        }
-
         var searchPattern = settings.SearchPattern ?? "*";
-        var searchPath = PathService.BuildPath(settings.SearchPath);
-        var files = new DirectoryInfo(searchPath).EnumerateFiles(searchPattern, searchOptions);
+        var searchPath = PathHelper.BuildPath(settings.SearchPath);
+        var files = FileSearcher.Search(searchPath, searchPattern, settings.IncludeHidden,
+            settings.RecurseSubdirectories);
 
         var grouped = files
             .GroupBy(fileInfo => fileInfo.Extension)

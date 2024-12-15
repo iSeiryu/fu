@@ -19,7 +19,7 @@ internal sealed class CountWords : Command<CountWords.Settings> {
     }
 
     readonly char[] _separators = [' ', '\t', ':', ';', '.', ',', '/', '\\'];
-    const string wordPattern = @"[^\w]";
+    const string WordPattern = @"[^\w]";
 
     public override int Execute([NotNull] CommandContext context, [NotNull] Settings settings) {
         AnsiConsole
@@ -60,7 +60,7 @@ internal sealed class CountWords : Command<CountWords.Settings> {
             .AsParallel()
             .SelectMany(fileInfo => File.ReadLines(fileInfo.FullName))
             .SelectMany(line => line.Split(_separators, StringSplitOptions.RemoveEmptyEntries))
-            .Select(word => Regex.Replace(word, wordPattern, "").ToLowerInvariant())
+            .Select(word => Regex.Replace(word, WordPattern, "").ToLowerInvariant())
             .Where(word => filter.Length == 0 || filter.Any(f => word == f))
             .GroupBy(word => word)
             .Select(group => (Word: group.Key, Count: group.Count()))
@@ -87,7 +87,7 @@ internal sealed class CountWords : Command<CountWords.Settings> {
                 fileName: fileInfo.FullName,
                 words: File.ReadLines(fileInfo.FullName)
                     .SelectMany(line => line.Split(_separators, StringSplitOptions.RemoveEmptyEntries))
-                    .Select(word => Regex.Replace(word, wordPattern, "").ToLowerInvariant())
+                    .Select(word => Regex.Replace(word, WordPattern, "").ToLowerInvariant())
                     .Where(word => filter.Length == 0 || filter.Any(f => word == f))
                     .GroupBy(word => word)
                     .Select(group => (Word: group.Key, Count: group.Count()))

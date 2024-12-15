@@ -34,7 +34,7 @@ internal sealed class DisplayDirectoriesAsTree : Command<DisplayDirectoriesAsTre
     }
 
     static void Search(Settings settings) {
-        var searchPath = PathService.BuildPath(settings.SearchPath);
+        var searchPath = PathHelper.BuildPath(settings.SearchPath);
 
         var searchOptions = new EnumerationOptions {
             AttributesToSkip = settings.IncludeHidden
