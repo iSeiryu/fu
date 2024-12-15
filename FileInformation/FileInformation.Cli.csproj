@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>0.0.4</Version>
+    <Version>0.0.5</Version>
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -17,7 +17,7 @@
     <PackageReleaseNotes>https://github.com/iseiryu/FileInformation/blob/main/CHANGELOG.md</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
-    <Description>A dotnet global tool to get data about the files and directories.</Description>
+    <Description>A CLI tool to get data about files and directories.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/iseiryu/FileInformation</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
